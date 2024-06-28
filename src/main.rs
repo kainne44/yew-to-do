@@ -1,4 +1,5 @@
 use color_eyre::eyre::{Report, Result};
+use std::fmt::Display;
 use yew::prelude::*;
 
 #[derive(PartialEq)]
@@ -38,60 +39,35 @@ impl Default for Item {
     }
 }
 
-struct ItemList {
-    item_list: Vec<Item>,
-}
-
-impl Default for ItemList {
-    fn default() -> Self {
-        Self {
-            item_list: Vec::new(),
-        }
-    }
-}
-
-impl ItemList {
-    fn add_item(&mut self, item: Item) -> &mut Self {
-        self.item_list.push(item);
-        self
-    }
-
-    fn remove_item(&mut self, item: Item) -> Result<Item> {
-        let index = self.item_list.iter().position(|x: &Item| {
-            x == &Item {
-                name: item.name.clone(),
-                state: ItemState::Incomplete,
-            } || x
-                == &Item {
-                    name: item.name.clone(),
-                    state: ItemState::Complete,
-                }
-        });
-        match index {
-            Some(i) => Ok(self.item_list.remove(i)),
-            None => Err(Report::msg("Item not found!")),
-        }
+impl Display for Item {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
     }
 }
 
 #[function_component]
-fn App() -> Html {
-    let counter = use_state(|| 0);
-    let onclick = {
-        let counter = counter.clone();
-        move |_| {
-            let value = *counter + 1;
-            counter.set(value);
-        }
-    };
+fn Jim() -> Html {
+    let item1 = Item::new(String::from("Tomatoes"));
+    let item2 = Item::new(String::from("Gummy Bears"));
+    let item3 = Item::new(String::from("Pasta"));
+    let list = vec![item1, item2, item3];
+
     html! {
-        <div>
-        <button{onclick}>{"+1"}</button>
-        <p>{*counter}</p>
-        </div>
+            <p>{
+                for list.into_iter().map(|item| {
+                    html_nested!{
+                        <p>{ item.name }</p>
+                    }
+                })
+            }</p>
+
     }
+
+    // html! {
+    //     <p>{list.into_iter().collect::<Html>()}</p>
+    // }
 }
 
 fn main() {
-    yew::Renderer::<App>::new().render();
+    yew::Renderer::<Jim>::new().render();
 }
